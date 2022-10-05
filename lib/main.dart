@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("HTTP POST"),
+        title: Text("HTTP PUT / PATCH"),
         centerTitle: true,
       ),
       body: ListView(
@@ -71,8 +71,8 @@ class _HomePageState extends State<HomePage> {
                 const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
             child: ElevatedButton(
               onPressed: () async {
-                var response = await http.post(
-                  Uri.parse("https://reqres.in/api/users"),
+                var response = await http.put(
+                  Uri.parse("https://reqres.in/api/users/2"),
                   body: {"name": nameCtl.text, "job": jobCtl.text},
                 );
 
