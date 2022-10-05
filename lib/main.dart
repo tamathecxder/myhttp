@@ -26,71 +26,74 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late String id;
-  late String name;
-  late String email;
+  TextEditingController nameCtl = TextEditingController();
+  TextEditingController jobCtl = TextEditingController();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    id = "";
-    name = "";
-    email = "";
-    super.initState();
-  }
+  String resResult = "Belum ada data...";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("HTTP GET"),
+        title: Text("HTTP POST"),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "ID: $id",
-              style: TextStyle(fontSize: 20),
+      body: ListView(
+        children: [
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
+            child: TextField(
+              controller: nameCtl,
+              autocorrect: false,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Nama Lengkap",
+              ),
+              keyboardType: TextInputType.text,
             ),
-            Text(
-              "Name: $name",
-              style: TextStyle(fontSize: 20),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
+            child: TextField(
+              controller: jobCtl,
+              autocorrect: false,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Job Description",
+              ),
+              keyboardType: TextInputType.text,
             ),
-            Text(
-              "Email: $email",
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(
-              height: 14,
-            ),
-            ElevatedButton(
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
+            child: ElevatedButton(
               onPressed: () async {
-                var myResponse = await http.get(
-                  Uri.parse("https://reqres.in/api/users/1"),
+                var response = await http.post(
+                  Uri.parse("https://reqres.in/api/users"),
+                  body: {"name": nameCtl.text, "job": jobCtl.text},
                 );
 
-                if (myResponse.statusCode == 200) {
-                  Map<String, dynamic> data =
-                      json.decode(myResponse.body) as Map<String, dynamic>;
-                  print("Successfull");
-                  print(data);
+                Map<String, dynamic> data = json.decode(response.body);
 
-                  setState(() {
-                    id = data["data"]["id"].toString();
-                    email = data["data"]["email"].toString();
-                    name =
-                        "${data['data']['first_name']} ${data['data']['last_name']}";
-                  });
-                } else {
-                  print("Error: ${myResponse.statusCode}");
-                }
+                setState(() {
+                  resResult = "${data['name']} | ${data['job']}";
+                });
               },
-              child: Text("Get Data"),
+              child: Text("Submit"),
             ),
-          ],
-        ),
+          ),
+          SizedBox(
+            height: 50,
+          ),
+          Divider(),
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Text(resResult),
+          ),
+        ],
       ),
     );
   }
