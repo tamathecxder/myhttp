@@ -26,72 +26,61 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController nameCtl = TextEditingController();
-  TextEditingController jobCtl = TextEditingController();
+  late String userEmail;
 
-  String resResult = "Belum ada data...";
+  @override
+  void initState() {
+    // TODO: implement initState
+    userEmail = "Belum ada data...";
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("HTTP PUT / PATCH"),
+        title: Text("HTTP DELETE"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              var response = await http.get(
+                Uri.parse("https://reqres.in/api/users/1"),
+              );
+
+              Map<String, dynamic> data =
+                  json.decode(response.body) as Map<String, dynamic>;
+
+              setState(() {
+                userEmail = data["data"]["email"];
+              });
+            },
+            icon: Icon(Icons.download),
+          ),
+        ],
       ),
       body: ListView(
+        padding: EdgeInsets.all(20),
         children: [
-          Padding(
-            padding:
-                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
-            child: TextField(
-              controller: nameCtl,
-              autocorrect: false,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "Nama Lengkap",
-              ),
-              keyboardType: TextInputType.text,
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
-            child: TextField(
-              controller: jobCtl,
-              autocorrect: false,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "Job Description",
-              ),
-              keyboardType: TextInputType.text,
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
-            child: ElevatedButton(
-              onPressed: () async {
-                var response = await http.put(
-                  Uri.parse("https://reqres.in/api/users/2"),
-                  body: {"name": nameCtl.text, "job": jobCtl.text},
-                );
-
-                Map<String, dynamic> data = json.decode(response.body);
-
-                setState(() {
-                  resResult = "${data['name']} | ${data['job']}";
-                });
-              },
-              child: Text("Submit"),
-            ),
-          ),
+          Text(userEmail),
           SizedBox(
-            height: 50,
+            height: 20,
           ),
-          Divider(),
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Text(resResult),
+          ElevatedButton(
+            onPressed: () async {
+              var response = await http.delete(
+                Uri.parse("https://reqres.in/api/users/1"),
+              );
+
+              if (response.statusCode == 204) {
+                setState(() {
+                  userEmail = "...";
+                });
+              } else {
+                print("Data gagal terhapus!");
+              }
+            },
+            child: Text("Delete User"),
           ),
         ],
       ),
