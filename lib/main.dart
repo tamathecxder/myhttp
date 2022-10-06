@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
 import 'package:http/http.dart' as http;
 
 void main(List<String> args) {
@@ -18,71 +19,59 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  List<Map<String, dynamic>> users = [];
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
+  Future getUsers() async {
+    try {
+      var response =
+          await http.get(Uri.parse("https://reqres.in/api/users?page=2"));
+      List data = (json.decode(response.body) as Map<String, dynamic>)["data"];
+      data.forEach((element) {
+        users.add(element);
+      });
 
-class _HomePageState extends State<HomePage> {
-  late String userEmail;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    userEmail = "Belum ada data...";
-    super.initState();
+      print(users);
+    } catch (e) {
+      print("Terjadi Kesalahan!");
+      print(e);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("HTTP DELETE"),
+        title: Text("Future Builder"),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () async {
-              var response = await http.get(
-                Uri.parse("https://reqres.in/api/users/1"),
-              );
-
-              Map<String, dynamic> data =
-                  json.decode(response.body) as Map<String, dynamic>;
-
-              setState(() {
-                userEmail = data["data"]["email"];
-              });
-            },
-            icon: Icon(Icons.download),
-          ),
-        ],
       ),
-      body: ListView(
-        padding: EdgeInsets.all(20),
-        children: [
-          Text(userEmail),
-          SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              var response = await http.delete(
-                Uri.parse("https://reqres.in/api/users/1"),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: FutureBuilder(
+          future: getUsers(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: Text("Loading....."),
               );
-
-              if (response.statusCode == 204) {
-                setState(() {
-                  userEmail = "...";
-                });
-              } else {
-                print("Data gagal terhapus!");
+            } else {
+              if (users.length == 0) {
+                return Center(child: Text("Tidak ada data."));
               }
-            },
-            child: Text("Delete User"),
-          ),
-        ],
+              return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage("${users[index]['avatar']}"),
+                  ),
+                  title: Text(
+                      "Nama Lengkap: ${users[index]['first_name']} ${users[index]['last_name']}"),
+                  subtitle: Text("Email: ${users[index]['email']}"),
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }
